@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js 3000"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "badge",
+    "generator",
+    "svg"
+  ],
+  "author": "Lee S Jensen",
+  "license": "MIT",
+  "description": "Badge generator",
   "dependencies": {
     "express": "^4.21.2"
   }
