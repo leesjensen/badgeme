@@ -3,7 +3,7 @@ const fs = require('fs');
 const app = express();
 
 app.get('/badge/:account/:id', (req, res) => {
-  const dir = `badges/${req.params.account}`;
+  const dir = `accounts/${req.params.account}`;
   const file = `${dir}/${req.params.id}.svg`;
 
   let svg = fileNotFound;
@@ -15,20 +15,20 @@ app.get('/badge/:account/:id', (req, res) => {
 });
 
 app.post('/badge/:account/:id', (req, res) => {
-  const labelText = req.query.label || 'Coverage';
-  const valueText = req.query.value || '0.00%';
-  const color = req.query.color || '#ee0000';
+  if (requestAuthorized(req.headers['authorization'], req.params.account)) {
+    const labelText = req.query.label || 'Coverage';
+    const valueText = req.query.value || '0.00%';
+    const color = req.query.color || '#ee0000';
 
-  const svg = generateBadge(labelText, valueText, color);
+    const svg = generateBadge(labelText, valueText, color);
 
-  const dir = `badges/${req.params.account}`;
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(`accounts/${req.params.account}/${req.params.id}.svg`, svg);
+
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
+  } else {
+    return res.status(401).send({ msg: 'Unauthorized' });
   }
-  fs.writeFileSync(`${dir}/${req.params.id}.svg`, svg);
-
-  res.setHeader('Content-Type', 'image/svg+xml');
-  res.send(svg);
 });
 
 app.get('*', (req, res) => {
@@ -37,13 +37,36 @@ app.get('*', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>API Endpoints</title>
+      <title>BadgeMe</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          background-color: #f0f0f0;
+        }
+        h1 {
+          margin: 1.5em 0 1em 1em;
+        }
+        ul {
+          list-style-type: none;
+          padding: 0;
+          margin-left: 1em;
+        }
+        li {
+          background-color: #fff;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          padding: .5em;
+          margin: .5em;
+          font-family: monospace;
+    }
+      </style>
     </head>
     <body>
-      <h1>Available Endpoints</h1>
+      <h1>🏅 BadgeMe endpoints</h1>
       <ul>
         <li>[GET] /badge/:account/:id</li>
-        <li>[POST] /badge/:account/:id?label=Coverage&value=0.00%&color=red</li>
+        <li>[POST] /badge/:account/:id?label=Coverage&value=0.00%25&color=red<br/>authorization: bearer token</li>
       </ul>
     </body>
     </html>`);
@@ -87,12 +110,36 @@ function generateBadge(label, value, color, padding = 5) {
         <rect width="${totalWidth}" height="20" fill="url(#s)"/>
       </g>
       <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
-        <text aria-hidden="true" x="${(labelWidth / 2) * 10}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${labelTextWidth * 10}">${label}</text>
+        <text aria-hidden="true" x="${(labelWidth / 2) * 10}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${
+    labelTextWidth * 10
+  }">${label}</text>
         <text x="${(labelWidth / 2) * 10}" y="140" transform="scale(.1)" fill="#fff" textLength="${labelTextWidth * 10}">${label}</text>
-        <text aria-hidden="true" x="${(labelWidth + valueWidth / 2) * 10}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${valueTextWidth * 10}">${value}</text>
+        <text aria-hidden="true" x="${
+          (labelWidth + valueWidth / 2) * 10
+        }" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${valueTextWidth * 10}">${value}</text>
         <text x="${(labelWidth + valueWidth / 2) * 10}" y="140" transform="scale(.1)" fill="#fff" textLength="${valueTextWidth * 10}">${value}</text>
       </g>
     </svg>`;
+}
+
+function requestAuthorized(authHeader, account) {
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    const dir = `accounts/${account}`;
+    const accountFile = `${dir}/account.json`;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(accountFile, `{"account":"${account}", "token": "${token}"}`);
+    }
+
+    if (fs.existsSync(accountFile)) {
+      const data = JSON.parse(fs.readFileSync(accountFile));
+      if (data.token === token) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 const port = process.argv[2] || 3000;
