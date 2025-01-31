@@ -3,8 +3,9 @@ const fs = require('fs');
 const app = express();
 
 app.get('/badge/:account/:id', (req, res) => {
-  const dir = `accounts/${req.params.account}`;
-  const file = `${dir}/${req.params.id}.svg`;
+  const ids = getIds(req);
+  const dir = `accounts/${ids.account}`;
+  const file = `${dir}/${ids.badge}.svg`;
 
   let svg = fileNotFound;
   if (fs.existsSync(file)) {
@@ -15,14 +16,15 @@ app.get('/badge/:account/:id', (req, res) => {
 });
 
 app.post('/badge/:account/:id', (req, res) => {
-  if (requestAuthorized(req.headers['authorization'], req.params.account)) {
+  const ids = getIds(req);
+  if (requestAuthorized(req.headers['authorization'], ids.account)) {
     const labelText = req.query.label || 'Coverage';
     const valueText = req.query.value || '0.00%';
     const color = req.query.color || '#ee0000';
 
     const svg = generateBadge(labelText, valueText, color);
 
-    fs.writeFileSync(`accounts/${req.params.account}/${req.params.id}.svg`, svg);
+    fs.writeFileSync(`accounts/${ids.account}/${ids.badge}.svg`, svg);
 
     res.setHeader('Content-Type', 'image/svg+xml');
     res.send(svg);
@@ -82,12 +84,18 @@ const fileNotFound = `
 </svg>
 `;
 
+function getIds(req) {
+  const cleanParam = (param) => param.replace(/[^a-zA-Z0-9]/g, '');
+  const account = cleanParam(req.params.account);
+  const badge = cleanParam(req.params.id);
+  return { account, badge };
+}
+
 function estimateTextWidth(text, fontSize = 11, avgCharWidth = 7) {
   return Math.ceil(text.length * (avgCharWidth * (fontSize / 11)));
 }
 
 function generateBadge(label, value, color, padding = 5) {
-  // Estimate text widths and apply padding
   const labelTextWidth = estimateTextWidth(label);
   const valueTextWidth = estimateTextWidth(value);
   const labelWidth = labelTextWidth + padding * 2;
