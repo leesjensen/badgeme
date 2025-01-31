@@ -1,9 +1,9 @@
 {
   "name": "badgeme",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "service.js",
   "scripts": {
-    "start": "node index.js 3000"
+    "start": "node service.js 3000"
   },
   "keywords": [
     "badge",
