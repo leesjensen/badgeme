@@ -31,6 +31,24 @@ app.post('/badge/:account/:id', (req, res) => {
   res.send(svg);
 });
 
+app.get('*', (req, res) => {
+  res.send(`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>API Endpoints</title>
+    </head>
+    <body>
+      <h1>Available Endpoints</h1>
+      <ul>
+        <li>[GET] /badge/:account/:id</li>
+        <li>[POST] /badge/:account/:id?label=Coverage&value=0.00%&color=red</li>
+      </ul>
+    </body>
+    </html>`);
+});
+
 const fileNotFound = `
 <svg xmlns="http://www.w3.org/2000/svg" width="90" height="20" role="img" aria-label="File Not Found">
   <title>File Not Found</title>
