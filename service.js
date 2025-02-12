@@ -118,13 +118,9 @@ function generateBadge(label, value, color, padding = 5) {
         <rect width="${totalWidth}" height="20" fill="url(#s)"/>
       </g>
       <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
-        <text aria-hidden="true" x="${(labelWidth / 2) * 10}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${
-    labelTextWidth * 10
-  }">${label}</text>
+        <text aria-hidden="true" x="${(labelWidth / 2) * 10}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${labelTextWidth * 10}">${label}</text>
         <text x="${(labelWidth / 2) * 10}" y="140" transform="scale(.1)" fill="#fff" textLength="${labelTextWidth * 10}">${label}</text>
-        <text aria-hidden="true" x="${
-          (labelWidth + valueWidth / 2) * 10
-        }" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${valueTextWidth * 10}">${value}</text>
+        <text aria-hidden="true" x="${(labelWidth + valueWidth / 2) * 10}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${valueTextWidth * 10}">${value}</text>
         <text x="${(labelWidth + valueWidth / 2) * 10}" y="140" transform="scale(.1)" fill="#fff" textLength="${valueTextWidth * 10}">${value}</text>
       </g>
     </svg>`;
@@ -133,18 +129,30 @@ function generateBadge(label, value, color, padding = 5) {
 function requestAuthorized(authHeader, account) {
   if (authHeader) {
     const token = authHeader.split(' ')[1];
-    const dir = `accounts/${account}`;
-    const accountFile = `${dir}/account.json`;
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(accountFile, `{"account":"${account}", "token": "${token}"}`);
-    }
-
-    if (fs.existsSync(accountFile)) {
-      const data = JSON.parse(fs.readFileSync(accountFile));
-      if (data.token === token) {
-        return true;
+    if (isValidToken(token)) {
+      const dir = `accounts/${account}`;
+      const accountFile = `${dir}/account.json`;
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(accountFile, `{"account":"${account}", "token": "${token}"}`);
       }
+
+      if (fs.existsSync(accountFile)) {
+        const data = JSON.parse(fs.readFileSync(accountFile));
+        if (data.token === token) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function isValidToken(token) {
+  if (token) {
+    token = token.toLowerCase();
+    if (token !== 'undefined' && token !== 'null') {
+      return true;
     }
   }
   return false;
