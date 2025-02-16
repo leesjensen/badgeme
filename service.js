@@ -5,17 +5,14 @@ const { generateBadge, notFoundBadge } = require('./badgeMaker');
 
 app.get('/badge/:account/:id', (req, res) => {
   const ids = getIdParams(req);
-  const dir = `accounts/${ids.account}`;
-  const file = `${dir}/${ids.badge}.svg`;
+  const file = `accounts/${ids.account}/${ids.badge}.svg`;
 
-  let svg = notFoundBadge;
-  let status = 404;
-  if (fs.existsSync(file)) {
-    svg = fs.readFileSync(file);
-    status = 200;
-  }
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.status(status).send(svg);
+  if (fs.existsSync(file)) {
+    res.status(200, fs.readFileSync(file));
+  } else {
+    res.status(404).send(notFoundBadge);
+  }
 });
 
 app.post('/badge/:account/:id', authorizeRequest, (req, res) => {
@@ -24,7 +21,6 @@ app.post('/badge/:account/:id', authorizeRequest, (req, res) => {
   const color = req.query.color || '#ee0000';
 
   const svg = generateBadge(labelText, valueText, color);
-
   const ids = getIdParams(req);
   fs.writeFileSync(`accounts/${ids.account}/${ids.badge}.svg`, svg);
 
