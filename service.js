@@ -127,25 +127,28 @@ function generateBadge(label, value, color, padding = 5) {
 }
 
 function requestAuthorized(authHeader, account) {
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-    if (isValidToken(token)) {
-      const dir = `accounts/${account}`;
-      const accountFile = `${dir}/account.json`;
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(accountFile, `{"account":"${account}", "token": "${token}"}`);
-      }
-
-      if (fs.existsSync(accountFile)) {
-        const data = JSON.parse(fs.readFileSync(accountFile));
-        if (data.token === token) {
-          return true;
-        }
-      }
-    }
+  if (!authHeader) {
+    return false;
   }
-  return false;
+
+  const token = authHeader.split(' ')[1];
+  if (!isValidToken(token)) {
+    return false;
+  }
+
+  const dir = `accounts/${account}`;
+  const accountFile = `${dir}/account.json`;
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(accountFile, `{"account":"${account}", "token": "${token}"}`);
+  }
+
+  if (!fs.existsSync(accountFile)) {
+    return false;
+  }
+
+  const data = JSON.parse(fs.readFileSync(accountFile));
+  return data.token === token;
 }
 
 function isValidToken(token) {
