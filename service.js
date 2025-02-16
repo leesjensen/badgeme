@@ -152,12 +152,15 @@ function requestAuthorized(authHeader, account) {
 }
 
 function isValidToken(token) {
-  if (token) {
-    token = token.toLowerCase();
-    if (token !== 'undefined' && token !== 'null') {
-      return true;
-    }
+  if (!token) {
+    return false;
   }
+
+  token = token.toLowerCase();
+  if (token !== 'undefined' && token !== 'null') {
+    return true;
+  }
+
   return false;
 }
 
