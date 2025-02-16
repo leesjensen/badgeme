@@ -157,11 +157,11 @@ function isValidToken(token) {
   }
 
   token = token.toLowerCase();
-  if (token !== 'undefined' && token !== 'null') {
-    return true;
+  if (token === 'undefined' || token === 'null') {
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 const port = process.argv[2] || 3000;
