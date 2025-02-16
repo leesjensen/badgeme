@@ -8,25 +8,23 @@ app.get('/badge/:account/:id', (req, res) => {
   const file = `${dir}/${ids.badge}.svg`;
 
   let svg = fileNotFound;
+  let status = 404;
   if (fs.existsSync(file)) {
     svg = fs.readFileSync(file);
+    status = 200;
   }
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.send(svg);
+  res.status(status).send(svg);
 });
 
-app.post('/badge/:account/:id', (req, res) => {
-  const ids = getIds(req);
-  if (!requestAuthorized(req.headers['authorization'], ids.account)) {
-    return res.status(401).send({ msg: 'Unauthorized' });
-  }
-
+app.post('/badge/:account/:id', authorizeRequest, (req, res) => {
   const labelText = req.query.label || 'Coverage';
   const valueText = req.query.value || '0.00%';
   const color = req.query.color || '#ee0000';
 
   const svg = generateBadge(labelText, valueText, color);
 
+  const ids = getIds(req);
   fs.writeFileSync(`accounts/${ids.account}/${ids.badge}.svg`, svg);
 
   res.setHeader('Content-Type', 'image/svg+xml');
@@ -84,12 +82,11 @@ const fileNotFound = `
 </svg>
 `;
 
-function getIds(req) {
-  const cleanParam = (param) => param.replace(/[^a-zA-Z0-9]/g, '');
-  const account = cleanParam(req.params.account);
-  const badge = cleanParam(req.params.id);
-  return { account, badge };
-}
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+  });
+});
 
 function estimateTextWidth(text, fontSize = 11, avgCharWidth = 7) {
   return Math.ceil(text.length * (avgCharWidth * (fontSize / 11)));
@@ -126,42 +123,41 @@ function generateBadge(label, value, color, padding = 5) {
     </svg>`;
 }
 
-function requestAuthorized(authHeader, account) {
-  if (!authHeader) {
-    return false;
-  }
-
-  const token = authHeader.split(' ')[1];
-  if (!isValidToken(token)) {
-    return false;
-  }
-
+function authorizeRequest(req, res, next) {
+  const account = getIds(req).account;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
   const dir = `accounts/${account}`;
-  const accountFile = `${dir}/account.json`;
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(accountFile, `{"account":"${account}", "token": "${token}"}`);
+  if (token && getAccountData(dir, account, token).token === token) {
+    next();
+  } else {
+    return res.status(401).send({ msg: 'Unauthorized' });
   }
-
-  if (!fs.existsSync(accountFile)) {
-    return false;
-  }
-
-  const data = JSON.parse(fs.readFileSync(accountFile));
-  return data.token === token;
 }
 
-function isValidToken(token) {
-  if (!token) {
-    return false;
+function getAccountData(dir, account, token) {
+  const accountFile = `${dir}/account.json`;
+  let data = { account, token };
+  if (fs.existsSync(dir)) {
+    data = JSON.parse(fs.readFileSync(accountFile));
+  } else {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(accountFile, JSON.stringify(data));
+  }
+  return data;
+}
+
+function getIds(req) {
+  const cleanParam = (param) => param.replace(/[^a-zA-Z0-9]/g, '');
+  const account = cleanParam(req.params.account);
+  const badge = cleanParam(req.params.id);
+  if (account && badge) {
+    return { account, badge };
   }
 
-  token = token.toLowerCase();
-  if (token === 'undefined' || token === 'null') {
-    return false;
-  }
-
-  return true;
+  const err = new Error('Invalid account or badge');
+  err.status = 400;
+  throw err;
 }
 
 const port = process.argv[2] || 3000;
