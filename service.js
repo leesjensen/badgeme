@@ -17,20 +17,20 @@ app.get('/badge/:account/:id', (req, res) => {
 
 app.post('/badge/:account/:id', (req, res) => {
   const ids = getIds(req);
-  if (requestAuthorized(req.headers['authorization'], ids.account)) {
-    const labelText = req.query.label || 'Coverage';
-    const valueText = req.query.value || '0.00%';
-    const color = req.query.color || '#ee0000';
-
-    const svg = generateBadge(labelText, valueText, color);
-
-    fs.writeFileSync(`accounts/${ids.account}/${ids.badge}.svg`, svg);
-
-    res.setHeader('Content-Type', 'image/svg+xml');
-    res.send(svg);
-  } else {
+  if (!requestAuthorized(req.headers['authorization'], ids.account)) {
     return res.status(401).send({ msg: 'Unauthorized' });
   }
+
+  const labelText = req.query.label || 'Coverage';
+  const valueText = req.query.value || '0.00%';
+  const color = req.query.color || '#ee0000';
+
+  const svg = generateBadge(labelText, valueText, color);
+
+  fs.writeFileSync(`accounts/${ids.account}/${ids.badge}.svg`, svg);
+
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.send(svg);
 });
 
 app.get('*', (req, res) => {
