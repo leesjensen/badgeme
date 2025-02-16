@@ -22,6 +22,7 @@ rm -rf build
 mkdir build
 cp *.js build
 cp *.json build
+cp -r public build
 
 # Step 2
 printf "\n----> Copy the distribution package to the target\n"
