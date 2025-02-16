@@ -46,7 +46,7 @@ function authorizeRequest(req, res, next) {
   if (token && getAccountData(dir, account, token).token === token) {
     next();
   } else {
-    return res.status(401).send({ msg: 'Unauthorized' });
+    res.status(401).send({ msg: 'Unauthorized' });
   }
 }
 
