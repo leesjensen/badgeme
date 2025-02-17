@@ -1,10 +1,12 @@
 # 🏅 Badge Me
 
+![Coverage badge](https://badge.cs329.click/badge/leesjensen/badgemecoverage)
+
 Badge Me is a convenient service for creating and persisting badges that display a label and value. This is useful for continuous integration (CI) pipelines that want to use a badge to report the status of the pipeline in a README.md file without having to store a store a badge in the GitHub repository itself.
 
 Badges are represented with a simple but clean looking SVG. The following provides an example.
 
-![Example badge](exampleBadge.svg)
+- Example: ![Example badge](exampleBadge.svg)
 
 ```html
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="118" height="20" role="img" aria-label="Coverage: 10.00%">
