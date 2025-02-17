@@ -68,17 +68,50 @@ https://badge.cs329.click
 
 ## Installation
 
-Badge Me is a simple JavaScript Express application. Simply run `service.js` using Node.js after installing the require Express NPM dependency.
+Badge Me is a JavaScript Express application. Run `index.js` using Node.js after installing the require package dependencies.
 
 ```sh
 git clone https://github.com/leesjensen/badgeme
 cd badgeme
 npm install
 npm run start
+
+🏅 BadgeMe is running on port 3000
 ```
 
 The service will start on port 3000 by default but you can override that by passing the desired port to node.
 
+```sh
+node index.js 5000
 ```
-node service.js 5000
+
+## Tests
+
+Badge Me uses **Jest** and **SuperTest** for testing.
+
+```sh
+npm run test
+
+ PASS  ./service.test.js
+  ✓ homepage (11 ms)
+  ✓ Badge create (3 ms)
+  ✓ Badge create and get (2 ms)
+  ✓ Badge get unknown (2 ms)
+  ✓ Badge create no auth (1 ms)
+  ✓ Badge create bad auth (1 ms)
+  ✓ Badge create bad auth undefined text (2 ms)
+  ✓ Badge create good then bad auth (3 ms)
+  ✓ Badge create with bad account (2 ms)
+
+--------------|---------|----------|---------|---------|-------------------
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+--------------|---------|----------|---------|---------|-------------------
+All files     |     100 |       90 |     100 |     100 |
+ ...eMaker.js |     100 |      100 |     100 |     100 |
+ service.js   |     100 |    88.88 |     100 |     100 | 8,41-42
+--------------|---------|----------|---------|---------|-------------------
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        0.359 s, estimated 1 s
 ```

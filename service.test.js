@@ -1,7 +1,18 @@
 const request = require('supertest');
 const app = require('./service');
+const fs = require('fs');
 
-const account = generateName('account');
+const testAccountsDir = 'testAccounts';
+
+beforeAll(async () => {
+  app.setConfig({ accountDir: testAccountsDir });
+});
+
+afterAll(async () => {
+  if (fs.existsSync(testAccountsDir)) {
+    fs.rmdirSync(testAccountsDir, { recursive: true });
+  }
+});
 
 test('homepage', async () => {
   const getHomepageRes = await request(app).get('/');
@@ -11,7 +22,7 @@ test('homepage', async () => {
 });
 
 test('Badge create', async () => {
-  const badge = generateName('badge');
+  const [account, badge] = generateIds();
   const labelText = 'testLabel';
   const valueText = 'testValue';
   const color = 'testColor';
@@ -27,7 +38,7 @@ test('Badge create', async () => {
 });
 
 test('Badge create and get', async () => {
-  const badge = generateName('badge');
+  const [account, badge] = generateIds();
   const postBadgeRes = await request(app).post(`/badge/${account}/${badge}`).set('Authorization', 'Bearer testToken');
   expect(postBadgeRes.status).toBe(200);
 
@@ -36,7 +47,7 @@ test('Badge create and get', async () => {
 });
 
 test('Badge get unknown', async () => {
-  const badge = generateName('badge');
+  const [account, badge] = generateIds();
 
   const getBadgeRes = await request(app).get(`/badge/${account}/${badge}`);
   expect(getBadgeRes.status).toBe(404);
@@ -46,19 +57,25 @@ test('Badge get unknown', async () => {
 });
 
 test('Badge create no auth', async () => {
-  const badge = generateName('badge');
+  const [account, badge] = generateIds();
   const postBadgeRes = await request(app).post(`/badge/${account}/${badge}`);
   expect(postBadgeRes.status).toBe(401);
 });
 
 test('Badge create bad auth', async () => {
-  const badge = generateName('badge');
+  const [account, badge] = generateIds();
   const postBadgeRes = await request(app).post(`/badge/${account}/${badge}`).set('Authorization', 'Bearer');
   expect(postBadgeRes.status).toBe(401);
 });
 
+test('Badge create bad auth undefined text', async () => {
+  const [account, badge] = generateIds();
+  const postBadgeRes = await request(app).post(`/badge/${account}/${badge}`).set('Authorization', 'Bearer undefined');
+  expect(postBadgeRes.status).toBe(401);
+});
+
 test('Badge create good then bad auth', async () => {
-  const badge = generateName('badge');
+  const [account, badge] = generateIds();
   let postBadgeRes = await request(app).post(`/badge/${account}/${badge}`).set('Authorization', 'Bearer testToken');
   expect(postBadgeRes.status).toBe(200);
 
@@ -72,6 +89,8 @@ test('Badge create with bad account', async () => {
   expect(postBadgeRes.body).toMatchObject({ error: 'Invalid account or badge' });
 });
 
-function generateName(root) {
-  return `${root}_${Math.random().toString(36).substring(2, 15)}`;
+function generateIds() {
+  const account = `account_${Math.random().toString(36).substring(2, 15)}`;
+  const badge = `badge_${Math.random().toString(36).substring(2, 15)}`;
+  return [account, badge];
 }

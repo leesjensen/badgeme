@@ -1,7 +1,7 @@
 {
   "collectCoverage": true,
   "coverageReporters": ["json-summary", "text"],
-  "modulePathIgnorePatterns": ["<rootDir>/accounts/"],
+  "modulePathIgnorePatterns": ["<rootDir>/accounts/", "<rootDir>/testAccounts/"],
   "coverageThreshold": {
     "global": {
       "branches": 30,

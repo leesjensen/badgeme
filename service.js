@@ -2,12 +2,15 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 const { generateBadge, notFoundBadge } = require('./badgeMaker');
+let accountDir = 'accounts';
+
+app.setConfig = (config) => {
+  accountDir = config.accountDir || accountDir;
+};
 
 app.get('/badge/:account/:id', (req, res) => {
-  console.log('badge getting');
-
   const ids = getIdParams(req);
-  const file = `accounts/${ids.account}/${ids.badge}.svg`;
+  const file = `${accountDir}/${ids.account}/${ids.badge}.svg`;
 
   res.setHeader('Content-Type', 'image/svg+xml');
   if (fs.existsSync(file)) {
@@ -24,7 +27,7 @@ app.post('/badge/:account/:id', authorizeRequest, (req, res) => {
 
   const svg = generateBadge(labelText, valueText, color);
   const ids = getIdParams(req);
-  fs.writeFileSync(`accounts/${ids.account}/${ids.badge}.svg`, svg);
+  fs.writeFileSync(`${accountDir}/${ids.account}/${ids.badge}.svg`, svg);
 
   res.setHeader('Content-Type', 'image/svg+xml');
   res.send(svg);
@@ -44,12 +47,16 @@ function authorizeRequest(req, res, next) {
   const account = getIdParams(req).account;
   const authHeader = req.headers['authorization'];
   const token = authHeader?.split(' ')[1];
-  const dir = `accounts/${account}`;
-  if (token && getAccountData(dir, account, token).token === token) {
+  const dir = `${accountDir}/${account}`;
+  if (isValidToken(token) && getAccountData(dir, account, token).token === token) {
     next();
   } else {
     res.status(401).send({ msg: 'Unauthorized' });
   }
+}
+
+function isValidToken(token) {
+  return token && token !== 'undefined' && token !== 'null';
 }
 
 function getAccountData(dir, account, token) {
