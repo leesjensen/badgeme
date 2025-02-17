@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Badgeme",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/service.js",
+      "program": "${workspaceFolder}/index.js",
       "runtimeArgs": ["--watch"]
     }
   ]
