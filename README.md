@@ -7,7 +7,11 @@ Badge Me is a convenient service for creating and persisting badges that display
 
 Badges are represented with a simple but clean looking SVG. The following provides an example.
 
-- Example: ![Example badge](exampleBadge.svg)
+| Example  | Image                              | URL                                                        |
+| -------- | ---------------------------------- | ---------------------------------------------------------- |
+| Coverage | ![Example badge](exampleBadge.svg) | https://badge.cs329.click/badge/leesjensen/badgemecoverage |
+
+## Example SVG
 
 ```html
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="118" height="20" role="img" aria-label="Coverage: 10.00%">
