@@ -1,5 +1,6 @@
 # 🏅 Badge Me
 
+[![CI Pipeline](https://github.com/leesjensen/badgeme/actions/workflows/ci.yml/badge.svg)](https://github.com/leesjensen/badgeme/actions/workflows/ci.yml)
 ![Coverage badge](https://badge.cs329.click/badge/leesjensen/badgemecoverage)
 
 Badge Me is a convenient service for creating and persisting badges that display a label and value. This is useful for continuous integration (CI) pipelines that want to use a badge to report the status of the pipeline in a README.md file without having to store a store a badge in the GitHub repository itself.
