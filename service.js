@@ -4,12 +4,14 @@ const app = express();
 const { generateBadge, notFoundBadge } = require('./badgeMaker');
 
 app.get('/badge/:account/:id', (req, res) => {
+  console.log('badge getting');
+
   const ids = getIdParams(req);
   const file = `accounts/${ids.account}/${ids.badge}.svg`;
 
   res.setHeader('Content-Type', 'image/svg+xml');
   if (fs.existsSync(file)) {
-    res.status(200, fs.readFileSync(file));
+    res.send(200, fs.readFileSync(file));
   } else {
     res.status(404).send(notFoundBadge);
   }
